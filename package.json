@@ -12,6 +12,9 @@
   "license": "ISC",
   "dependencies": {
     "dotenv": "^16.0.3",
-    "mqtt": "^4.3.7"
+    "ipfs": "^0.66.0",
+    "mqtt": "^4.3.7",
+    "multiformats": "^9.9.0",
+    "orbit-db": "^0.28.0"
   }
 }
