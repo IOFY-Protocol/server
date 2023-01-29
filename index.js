@@ -8,6 +8,8 @@ const host = process.env.BROKER;
 const port = process.env.PORT;
 const lockTopic = process.env.LOCK_TOPIC;
 const ackTopic = process.env.ACK_TOPIC;
+const getIdTopic = process.env.GET_ID_TOPIC;
+const deviceIdTopic = process.env.DEVICE_ID_TOPIC;
 
 const clientId = `mqtt_${Math.random().toString(16).slice(3)}`
 
@@ -18,7 +20,9 @@ const client = mqtt.connect(connectUrl, {
   connectTimeout: 4000,
   reconnectPeriod: 1000,
 })
-
+client.on('connect', () => {
+  console.log("MQTT connected")
+})
 
 /*client.on('connect', () => {
   console.log('Connected')
@@ -36,29 +40,40 @@ const client = mqtt.connect(connectUrl, {
 })*/
 
 async function lockDevice() {
-
-  const client = mqtt.connect(connectUrl, {
-    clientId,
-    clean: true,
-    connectTimeout: 4000,
-    reconnectPeriod: 1000,
-  })
-
-  client.on('connect', mqtt_connect_lock)
+  mqtt_connect_lock();
 }
-
 
 async function unlockDevice() {
-  const client = mqtt.connect(connectUrl, {
-    clientId,
-    clean: true,
-    connectTimeout: 4000,
-    reconnectPeriod: 1000,
+  mqtt_connect_unlock();
+}
+
+async function getDeviceId() {
+  client.subscribe([deviceIdTopic], () => {
+    console.log(`Subscribe to Topic '${deviceIdTopic}'`)
   })
 
-  client.on('connect', mqtt_connect_unlock)
+  client.publish(getIdTopic, 'getId', { qos: 0, retain: false }, (error) => {
+    if (error) {
+      console.error(error)
+    }
+  })
 
+  const deviceId = await getId();
+  console.log("device id = ",deviceId)
+  return deviceId;
 }
+
+async function getId() {
+
+  return await new Promise((resolve, reject) => {
+    var ret;
+    var con = client.on('message', function (topic, payload) {
+      ret = payload.toString();
+      resolve(ret);
+    });
+  });
+}
+
 function mqtt_connect_unlock() {
   client.subscribe([ackTopic], () => {
     console.log(`Subscribe to Topic '${ackTopic}'`)
@@ -102,4 +117,20 @@ function ack_res(ackTopic, payload) {
   }
 }
 
-lockDevice();
+
+import express from 'express';
+const app = express()
+const serverPort = 3000
+
+app.get('/', (req, res) => {
+  res.send('Hello World!')
+})
+
+app.get('/ID', async function (req, res, next) {
+  let deviceId = await getDeviceId();
+  res.send(deviceId)
+})
+
+app.listen(serverPort, () => {
+  console.log(`Example app listening on port ${serverPort}`)
+})
