@@ -28,12 +28,12 @@ async function createDb(req) {
   console.log("profile = ", profile)
   console.log("close")
   await db.close();
-  console.log("disconnect")
+  //console.log("disconnect")
   await orbitdb.disconnect();
   return db.address;
 }
 
-async function readDb(fullAdress) {
+async function readDb(fullAddress) {
   console.log("read function")
   // Create IPFS instance
   const ipfsOptions = { repo: './ipfs', }
@@ -42,17 +42,18 @@ async function readDb(fullAdress) {
   // Create OrbitDB instance
   const orbitdb = await OrbitDB.createInstance(ipfs)
 
-  const db = await orbitdb.open(fullAdress);
+  const db = await orbitdb.open(fullAddress);
   console.log("address", db.address.toString())
   await db.load()
   //await delay(4000)
   console.log("get data")
-  const value = await db.get('')
-  console.log("value = ", value)
-  console.log("close")
+  const metadata = await db.get('')
+  //console.log("metadata = ", metadata)
+  //console.log("close")
   await db.close();
-  console.log("disconnect")
+  //console.log("disconnect")
   await orbitdb.disconnect();
+  return metadata;
 }
 
 function delay(ms) {

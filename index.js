@@ -131,9 +131,17 @@ app.get('/', (req, res) => {
   res.send('Hello World!')
 })
 
-app.get('/ID', async function (req, res, next) {
-  let deviceId = await getDeviceId();
+app.get('/ID', async function (req, res) {
+  const deviceId = await getDeviceId();
   res.send(deviceId)
+})
+
+app.get('/orbitdb/:fullAddress/:deviceId', async function (req, res) {
+  const address = "/orbitdb/"+req.params.fullAddress+"/"+req.params.deviceId;
+  console.log(address)
+  const metaData = await readDb(address);
+  console.log("metadata", metaData)
+  res.send(metaData)
 })
 
 app.post('/createDataBase',async (req, res) => {
