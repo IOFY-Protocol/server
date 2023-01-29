@@ -1,5 +1,6 @@
 import * as mqtt from "mqtt"
 import * as dotenv from 'dotenv'
+import {createDb, readDb} from './storage/storage.js'
 
 dotenv.config()
 
@@ -119,8 +120,12 @@ function ack_res(ackTopic, payload) {
 
 
 import express from 'express';
+import bodyParser from "body-parser";
 const app = express()
-const serverPort = 3000
+const serverPort = 8000
+
+app.use(bodyParser.urlencoded({ extended: false }));
+app.use(express.json())
 
 app.get('/', (req, res) => {
   res.send('Hello World!')
@@ -130,6 +135,12 @@ app.get('/ID', async function (req, res, next) {
   let deviceId = await getDeviceId();
   res.send(deviceId)
 })
+
+app.post('/createDataBase',async (req, res) => {
+  const address =  await createDb(req.body);
+  console.log(address.toString());
+  res.send({result:address.toString()});
+  })
 
 app.listen(serverPort, () => {
   console.log(`Example app listening on port ${serverPort}`)

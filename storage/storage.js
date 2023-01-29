@@ -1,7 +1,7 @@
 import * as IPFS from "ipfs";
 import OrbitDB from 'orbit-db'
 
-async function createDb() {
+async function createDb(req) {
   // Create IPFS instance
   const ipfsOptions = { repo: './ipfs', }
   const ipfs = await IPFS.create(ipfsOptions)
@@ -10,12 +10,19 @@ async function createDb() {
   const orbitdb = await OrbitDB.createInstance(ipfs)
 
   // Create database instance
-  const db = await orbitdb.docs('IOFY')
+  const db = await orbitdb.docs(req.Id)
   console.log("address", db.address.toString())
   const identity = db.identity
   console.log("identity ", identity.toJSON())
   console.log("put data")
-  await db.put({ _id: 'ip2', name: 'shamb0t', followers: 600 })
+  await db.put({
+     _id: req.Id , 
+     category: req.category , 
+     DeviceName: req.deviceName, 
+     RentalFee: req.rentalFee, 
+     Description: req.description,
+     Img: req.imgCid
+    })
   console.log("get Data")
   const profile = db.get('')
   console.log("profile = ", profile)
@@ -23,6 +30,7 @@ async function createDb() {
   await db.close();
   console.log("disconnect")
   await orbitdb.disconnect();
+  return db.address;
 }
 
 async function readDb(fullAdress) {
@@ -52,5 +60,6 @@ function delay(ms) {
     setTimeout(resolve, ms);
   });
 }
-//createDb()
-readDb('/orbitdb/zdpuAqTW9MoEnSkDQitmfpdw2za3Wa7LFeJKoHQchBDY5EwuZ/IOFY')
+//createDb('IOFY')
+//readDb('/orbitdb/zdpuAqTW9MoEnSkDQitmfpdw2za3Wa7LFeJKoHQchBDY5EwuZ/IOFY')
+ export {createDb, readDb}
