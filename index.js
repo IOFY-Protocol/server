@@ -121,9 +121,13 @@ function ack_res(ackTopic, payload) {
 
 import express from 'express';
 import bodyParser from "body-parser";
+import cors from 'cors';
+
+
 const app = express()
 const serverPort = 8000
 
+app.use(cors());
 app.use(bodyParser.urlencoded({ extended: false }));
 app.use(express.json())
 
@@ -146,8 +150,8 @@ app.get('/orbitdb/:fullAddress/:deviceId', async function (req, res) {
 
 app.post('/createDataBase',async (req, res) => {
   const address =  await createDb(req.body);
-  console.log(address.toString());
-  res.send({result:address.toString()});
+  console.log(address);
+  res.send({result:address});
   })
 
 app.listen(serverPort, () => {

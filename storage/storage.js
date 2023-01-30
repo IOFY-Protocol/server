@@ -3,6 +3,7 @@ import OrbitDB from 'orbit-db'
 
 async function createDb(req) {
   // Create IPFS instance
+  console.log("req ", req)
   const ipfsOptions = { repo: './ipfs', }
   const ipfs = await IPFS.create(ipfsOptions)
 
@@ -10,13 +11,14 @@ async function createDb(req) {
   const orbitdb = await OrbitDB.createInstance(ipfs)
 
   // Create database instance
-  const db = await orbitdb.docs(req.Id)
+  console.log("req id", req.id)
+  const db = await orbitdb.docs(req.id)
   console.log("address", db.address.toString())
   const identity = db.identity
   console.log("identity ", identity.toJSON())
   console.log("put data")
   await db.put({
-     _id: req.Id , 
+     _id: req.id , 
      category: req.category , 
      DeviceName: req.deviceName, 
      RentalFee: req.rentalFee, 
