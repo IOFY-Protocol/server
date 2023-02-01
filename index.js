@@ -1,6 +1,6 @@
 import * as mqtt from "mqtt"
 import * as dotenv from 'dotenv'
-import {createDb, readDb} from './storage/storage.js'
+import { createDb, readDb } from './storage/storage.js'
 
 dotenv.config()
 
@@ -40,12 +40,12 @@ client.on('connect', () => {
   console.log('Received Message:', lockTopic, payload.toString())
 })*/
 
-async function lockDevice() {
-  mqtt_connect_lock();
+async function lockDevice(id) {
+  mqtt_connect_lock(id);
 }
 
-async function unlockDevice() {
-  mqtt_connect_unlock();
+async function unlockDevice(id) {
+  mqtt_connect_unlock(id);
 }
 
 async function getDeviceId() {
@@ -60,7 +60,7 @@ async function getDeviceId() {
   })
 
   const deviceId = await getId();
-  console.log("device id = ",deviceId)
+  console.log("device id = ", deviceId)
   return deviceId;
 }
 
@@ -75,12 +75,12 @@ async function getId() {
   });
 }
 
-function mqtt_connect_unlock() {
+function mqtt_connect_unlock(id) {
   client.subscribe([ackTopic], () => {
     console.log(`Subscribe to Topic '${ackTopic}'`)
   })
 
-  client.publish(lockTopic, '0', { qos: 0, retain: false }, (error) => {
+  client.publish(lockTopic+"/"+id, '0', { qos: 0, retain: false }, (error) => {
     if (error) {
       console.error(error)
     }
@@ -91,12 +91,12 @@ function mqtt_connect_unlock() {
   })
 }
 
-function mqtt_connect_lock() {
+function mqtt_connect_lock(id) {
   client.subscribe([ackTopic], () => {
     console.log(`Subscribe to Topic '${lockTopic}'`)
   })
 
-  client.publish(lockTopic, '1', { qos: 0, retain: false }, (error) => {
+  client.publish(lockTopic+"/"+id, '1', { qos: 0, retain: false }, (error) => {
     if (error) {
       console.error(error)
     }
@@ -141,18 +141,31 @@ app.get('/ID', async function (req, res) {
 })
 
 app.get('/orbitdb/:fullAddress/:deviceId', async function (req, res) {
-  const address = "/orbitdb/"+req.params.fullAddress+"/"+req.params.deviceId;
+  const address = "/orbitdb/" + req.params.fullAddress + "/" + req.params.deviceId;
   console.log(address)
   const metaData = await readDb(address);
   console.log("metadata", metaData)
   res.send(metaData)
 })
 
-app.post('/createDataBase',async (req, res) => {
-  const address =  await createDb(req.body);
+app.post('/createDataBase', async (req, res) => {
+  const address = await createDb(req.body);
   console.log(address);
-  res.send({result:address});
-  })
+  res.send({ result: address });
+})
+
+app.post('/lockDevice', async (req, res) => {
+  await lockDevice();
+  console.log("locked");
+  //res.send({ result: address });
+})
+
+app.post('/unlockDevice', async (req, res) => {
+  await unlockDevice(req.body.did);
+  console.log("unlocked", req.body);
+  res.send({ result: "unlocked" });
+})
+
 
 app.listen(serverPort, () => {
   console.log(`Example app listening on port ${serverPort}`)

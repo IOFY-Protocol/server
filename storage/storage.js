@@ -1,6 +1,12 @@
 import * as IPFS from "ipfs";
 import OrbitDB from 'orbit-db'
 
+
+/*async function initGlobalIPFS(ipfsOptions) {
+  global.IPFS = await IPFS.create(ipfsOptions)
+};
+initGlobalIPFS()*/
+
 async function createDb(req) {
   // Create IPFS instance
   console.log("req ", req)
@@ -32,6 +38,7 @@ async function createDb(req) {
   await db.close();
   //console.log("disconnect")
   await orbitdb.disconnect();
+  await ipfs.stop();
   return db.address;
 }
 
@@ -55,6 +62,7 @@ async function readDb(fullAddress) {
   await db.close();
   //console.log("disconnect")
   await orbitdb.disconnect();
+  await ipfs.stop();
   return metadata;
 }
 
