@@ -107,16 +107,22 @@ function mqtt_connect_lock(id) {
   })
 }
 
+
 function ack_res(ackTopic, payload) {
   console.log('Received Message:', ackTopic, payload.toString())
   if (payload.toString() == "ACK") {
     console.log("the IOT Device received the msg")
-  } else if (payload.toString() == "NACK") {
+  } else if(payload.toString() == "ACK"){
+    console.log("the IOT Device received the msg")
+  }
+   else if (payload.toString() == "NACK") {
     console.log("unable to change the state of the device")
   } else {
     console.log("ack res error")
   }
 }
+
+
 
 
 import express from 'express';
@@ -154,15 +160,16 @@ app.post('/createDataBase', async (req, res) => {
   res.send({ result: address });
 })
 
-app.post('/lockDevice', async (req, res) => {
-  await lockDevice();
+/*app.post('/lockDevice', async (req, res) => {
+  await lockDevice("7297");
   console.log("locked");
   //res.send({ result: address });
-})
+})*/
 
 app.post('/unlockDevice', async (req, res) => {
   await unlockDevice(req.body.did);
   console.log("unlocked", req.body);
+  setTimeout(lockDevice, req.body.timeout, req.body.did);
   res.send({ result: "unlocked" });
 })
 
